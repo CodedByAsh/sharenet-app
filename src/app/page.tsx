@@ -1,103 +1,158 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useEffect, useState } from "react";
+import React from 'react'
+import CategoryBadge from '../components/CategoryBadge';
+import { HiSortAscending, HiSortDescending } from "react-icons/hi";
+import ContactHeader from "@/components/ContactHeader";
+
+
+type Spot = {
+  categoryName: string;
+  code: string;
+  fullName: string;
+  categoryId: number;
+  price: number;
+};
+
+type groupedSpots = {
+  [category: string]: Spot[];
+};
+  
+  export default function Page() {
+    const [groupedSpots, setGroupedSpots] = useState<groupedSpots>({});
+    const [sortBy, setSortBy] = useState<string | null>(null);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  
+  
+  useEffect(() => {
+    console.log("testing");
+    
+    const fetchData = async () => {
+      const response = await fetch("https://api.sharenet.co.za/api/v1/px2/spots");
+      const data = await response.json();
+
+      const grouped: groupedSpots = {};
+      data.spots.forEach((spot: Spot) => {
+        if (!grouped[spot.categoryName]) {
+          grouped[spot.categoryName] = [];
+        }
+        if (grouped[spot.categoryName].length < 5) {
+          grouped[spot.categoryName].push(spot);
+        }
+      });
+      setGroupedSpots(grouped);
+    };
+    fetchData();
+  }, []);
+
+  console.log(groupedSpots);
+
+
+  const flatSpots = Object.values(groupedSpots).flat();
+
+  const handleSort = (category: string) => {
+    if (sortBy === category) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(category);
+      setSortOrder('asc');
+    }
+  };
+
+  const sortedSpots = [...flatSpots].sort((a, b) => {
+    if (!sortBy) return 0;
+    if (sortBy === 'categoryId') {
+      return sortOrder === 'asc'
+        ? a.categoryId - b.categoryId
+        : b.categoryId - a.categoryId;
+    }
+    if (sortBy === 'categoryName') {
+      return sortOrder === 'asc'
+        ? a.categoryName.localeCompare(b.categoryName)
+        : b.categoryName.localeCompare(a.categoryName);
+    }
+    return 0;
+  });
+  
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <>
+    <ContactHeader />
+  <div className="min-h-screen p-2 sm:p-8 flex items-center justify-center">
+  <div className="w-full max-w-5xl overflow-x-auto">
+  <table className="w-full bg-[#181818] text-white rounded-xl overflow-hidden shadow-lg">
+          <thead>
+            <tr className="border-b border-gray-700">
+              <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm"> 
+                <div className="flex items-center">
+                  <span className="hidden">Category ID</span>
+                  <span className=" sm:hidden">ID</span>
+                  <button
+                    type="button"
+                    onClick={() => handleSort("categoryId")}
+                    className="ml-2"
+                  >
+                    {sortBy === 'categoryId' && sortOrder === 'asc' ? (
+                      <HiSortAscending className="inline w-4 h-4 text-gray-400 hover:text-white cursor-pointer" />
+                    ) : (
+                      <HiSortDescending className="inline w-4 h-4 text-gray-400 hover:text-white cursor-pointer" />
+                    )}
+                  </button>
+                </div>
+              </th>
+              <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm">Full Name</th>
+              <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm hidden sm:table-cell">Code</th>
+              <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm">
+                <div className="flex items-center">
+                  Category Name
+                  <button
+                    type="button"
+                    onClick={() => handleSort("categoryName")}
+                    className="ml-2"
+                  >
+                    {sortBy === 'categoryName' && sortOrder === 'asc' ? (
+                      <HiSortAscending className="inline w-4 h-4 text-gray-400 hover:text-white cursor-pointer" />
+                    ) : (
+                      <HiSortDescending className="inline w-4 h-4 text-gray-400 hover:text-white cursor-pointer" />
+                    )}
+                  </button>
+                </div>
+              </th>
+              <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedSpots.map((spot, idx) => (
+              <tr key={spot.categoryName + idx} className="border-b border-gray-800 hover:bg-gray-900 transition">
+                <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs  md:text-lg">{spot.categoryId}</td>
+                <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs md:text-lg">{spot.fullName}</td>
+                <td className="px-2 sm:px-4 py-2 sm:py-3 hidden sm:table-cell">{spot.code}</td>
+                <td className="px-2 sm:px-4 py-2 sm:py-3">
+                  {(() => {
+                    switch (spot.categoryName) {
+                      case "COMMODOTIES":
+                        return <CategoryBadge name={spot.categoryName} colour="#FF005C" className="text-xs sm:text-sm w-28 sm:w-40 h-7 sm:h-8" />;
+                      case "CURRENCIES":
+                        return <CategoryBadge name={spot.categoryName} colour="#FFC000" className="text-xs sm:text-sm w-28 sm:w-40 h-7 sm:h-8" />;
+                      case "JSE INDICES":
+                        return <CategoryBadge name={spot.categoryName} colour="#07B0D7" className="text-xs sm:text-sm w-28 sm:w-40 h-7 sm:h-8" />;
+                      case "SA BONDS":
+                        return <CategoryBadge name={spot.categoryName} colour="#f59e42" className="text-xs sm:text-sm w-28 sm:w-40 h-7 sm:h-8" />;
+                      case "WORLD INDICES":
+                        return <CategoryBadge name={spot.categoryName} colour="#009788" className="text-xs sm:text-sm w-28 sm:w-40 h-7 sm:h-8" />;
+                      default:
+                        return <CategoryBadge name={spot.categoryName} colour="#6B7280" className="text-xs sm:text-sm w-28 sm:w-40 h-7 sm:h-8" />; // gray
+                    }
+                  })()}
+                </td>
+                <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">{spot.price.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
+    </>
   );
 }
