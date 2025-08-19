@@ -86,7 +86,7 @@ type groupedSpots = {
             <tr className="border-b border-gray-700">
               <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm"> 
                 <div className="flex items-center">
-                  <span className="hidden">Category ID</span>
+                  <span className="hidden sm:block">Category ID</span>
                   <span className=" sm:hidden">ID</span>
                   <button
                     type="button"
